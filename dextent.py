@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import os
 from pathlib import Path
 
 import puremagic
@@ -30,6 +31,20 @@ def detect_extension(file_path: Path) -> list | None:
 
     return list(result) if result else None
 
+def scan_directory(directory: Path) -> list | None:
+    """
+    Scans a whole directory of files to present the user with the list of original extensions.
+    :param directory: Path to the directory
+    :return: List of sets of extensions with the filenames
+    """
+    # if Path.is_dir(directory) -- needs to be checked, perhaps at the main()
+    try:
+        with open(str(directory), 'r') as directory:
+            for file in directory:
+
+    except Exception as e:
+        print(f"Error analyzing directory: {e}")
+        return None
 
 def main():
     if len(sys.argv) != 2:

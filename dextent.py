@@ -14,8 +14,11 @@ def detect_extension(file_path: Path) -> list | None:
     """
     try:
         matches = puremagic.magic_file(str(file_path))
+    except ValueError:
+        print(f"Error analyzing file: A file must be at least 1 byte in size.")
+        return None
     except Exception as e:
-        print(f"Error analyzing file: {e}")
+        print(f"Error analyzing file: {e}.")
         return None
 
     if not matches:
@@ -23,13 +26,13 @@ def detect_extension(file_path: Path) -> list | None:
 
     result = {matches[0].extension}
 
-    if len(matches) > 1: # Addressing possible signatures with same or similar magic numbers
+    if len(matches) > 1:  # Collect all extensions with equal confidence
         for m in matches[1:]:
-            if m.confidence == matches[0].confidence:
-                if m.extension != matches[0].extension:
-                    result.add(m.extension)
+            if m.confidence == matches[0].confidence and m.extension != matches[0].extension:
+                result.add(m.extension)
 
     return list(result) if result else None
+
 
 def scan_directory(directory: Path) -> list | None:
     """
@@ -39,12 +42,20 @@ def scan_directory(directory: Path) -> list | None:
     """
     # if Path.is_dir(directory) -- needs to be checked, perhaps at the main()
     try:
-        with open(str(directory), 'r') as directory:
-            for file in directory:
+        children_paths = [child for child in directory.iterdir() if child.is_file()]
+        if not children_paths:
+            print(f"{directory} has no files.")
+            return None
+        children_results = []
+        for child in children_paths:
+            children_results.append({child.name: detect_extension(child)})
 
     except Exception as e:
         print(f"Error analyzing directory: {e}")
         return None
+
+    return children_results if children_results else None
+
 
 def main():
     if len(sys.argv) != 2:
